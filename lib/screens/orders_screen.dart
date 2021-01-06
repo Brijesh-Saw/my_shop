@@ -46,6 +46,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
               //...
               return Center(child: Text("An error occurred!"));
             } else {
+              if (dataSnapshot.data == null) {
+                return Center(child: Text("No orders to display!"));
+              }
               return Consumer<Orders>(
                 builder: (ctx, orderData, child) => ListView.builder(
                   itemBuilder: (ctx, i) => OrderItem(orderData.orders[i]),

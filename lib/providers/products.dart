@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:my_shop/models/http_exception.dart';
 
 import './product.dart';
 
@@ -73,6 +74,9 @@ class Products with ChangeNotifier {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
+      if (extractedData == null) {
+        return;
+      }
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
             id: prodId,
@@ -119,9 +123,17 @@ class Products with ChangeNotifier {
     // _items.insert(0, newProduct);            to add at the begining
   }
 
-  void updateProduct(String id, Product product) {
+  Future<void> updateProduct(String id, Product product) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
+      final url = "https://my-working-area.firebaseio.com/products/$id.json";
+      await http.patch(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'imageUrl': product.imageUrl,
+            'price': product.price,
+          }));
       _items[prodIndex] = product;
       notifyListeners();
     } else {
@@ -129,8 +141,20 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((product) => product.id == id);
+  Future<void> deleteProduct(String id) async {
+    final url = "https://my-working-area.firebaseio.com/products/$id.json";
+    final productindex = _items.indexWhere((product) => product.id == id);
+    var product = _items[productindex];
+    _items.removeAt(productindex);
     notifyListeners();
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      _items.insert(productindex, product);
+      notifyListeners();
+      throw HttpException(
+          "Could not able to delect product due to server error.");
+    }
+    product = null;
+    // _items.removeWhere((product) => product.id == id);
   }
 }

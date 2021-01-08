@@ -12,6 +12,7 @@ class UserProductsScreen extends StatelessWidget {
 
   Future<Void> _refreshProducts(BuildContext context) async {
     await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+    // return null;
   }
 
   @override

@@ -18,6 +18,8 @@ void main() {
   runApp(MyApp());
 }
 
+void pr(String t) {}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -30,18 +32,23 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Auth(),
         ),
         ChangeNotifierProxyProvider<Auth, Products>(
-          create: (ctx) => Products('', []),
+          create: (ctx) => Products('', '', []),
           update: (ctx, auth, previousProducts) => Products(
             auth.token,
-            previousProducts.items,
-            // previousProducts == null ? [] : previousProducts.items,
+            auth.userId,
+            previousProducts == null ? [] : previousProducts.items,
           ),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => Orders(),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          create: (ctx) => Orders('', '', []),
+          update: (ctx, auth, previousOrders) => Orders(
+            auth.token,
+            auth.userId,
+            previousOrders == null ? [] : previousOrders.orders,
+          ),
         ),
       ],
       child: Consumer<Auth>(
